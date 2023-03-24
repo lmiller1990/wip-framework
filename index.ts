@@ -234,7 +234,15 @@ class Parser {
     return c;
   }
 
-  parseNode() {
+  consumeTagCloseingBracket() {
+    const c = this.consume();
+    if (c?.token.type !== "rightAngleBracket") {
+      throw Error(`Malformed HTML. Expected ">", got "${c?.char}"`);
+    }
+    return c;
+  }
+
+  parseElement() {
     this.consumeTagOpeningBracket();
 
     const tag = this.consumeTag();
@@ -245,22 +253,14 @@ class Parser {
       attrs,
     };
 
+    this.consumeTagCloseingBracket()
+
     console.log(JSON.stringify(node, null, 4));
-    // while (tok = this.consume()) {
-    //   if () {
-    //     // new tag
-    //     if () {
-    //       const node =
-    //     }
-    //   }
-    // }
+    console.log(this.stack)
   }
 
   parse() {
-    // if (!this.root) {
-    this.parseNode();
-    // this.root = this.parseNode();
-    // }
+    this.parseElement();
   }
 }
 
