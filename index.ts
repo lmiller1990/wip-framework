@@ -193,27 +193,24 @@ class Parser {
     return this.stack.shift();
   }
 
-  consumeWhitespace () {
-    while (this.peek().token.type === 'whitespace') {
-      this.consume()
+  consumeWhitespace() {
+    while (this.peek().token.type === "whitespace") {
+      this.consume();
     }
   }
 
   consumeAttrs() {
     const attrs: Array<{ key: string; value: string }> = [];
     while (this.peek().token.type !== "rightAngleBracket") {
-      this.consumeWhitespace()
+      this.consumeWhitespace();
       const key = this.consume();
-      // equals
-      this.consume();
-      // opening "
-      this.consume();
+      this.consume(); // =
+      this.consume(); // "
       const value = this.consume();
-      // close "
-      this.consume();
+      this.consume(); // "
 
       if (!key || !value) {
-        throw Error('Malformed HTML when parsing attrs')
+        throw Error("Malformed HTML when parsing attrs");
       }
 
       attrs.push({ key: key!.char, value: value!.char });
@@ -221,11 +218,26 @@ class Parser {
     return attrs;
   }
 
-  parseNode() {
-    // <
-    this.consume();
+  consumeTag() {
     const tag = this.consume();
+    if (tag?.token.type !== "text") {
+      throw Error("Malformed HTML when parsing tag");
+    }
+    return tag.char;
+  }
 
+  consumeTagOpeningBracket() {
+    const c = this.consume();
+    if (c?.token.type !== "leftAngleBracket") {
+      throw Error(`Malformed HTML. Expected "<", got "${c?.char}"`);
+    }
+    return c;
+  }
+
+  parseNode() {
+    this.consumeTagOpeningBracket();
+
+    const tag = this.consumeTag();
     const attrs = this.consumeAttrs();
 
     const node = {
