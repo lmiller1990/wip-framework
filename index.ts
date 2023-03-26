@@ -176,16 +176,20 @@ describe("tokenize", () => {
   });
 });
 
+type Node = {
+  tag: string;
+  parent?: Node;
+  attrs: Array<Record<string, string>>;
+};
+
 class Parser {
   stack: Match[];
 
   constructor(_tokens: Match[]) {
-    // console.log(_tokens)
     this.stack = _tokens;
   }
 
   peek() {
-    // console.log('peek', this.stack[0])
     return this.stack[0];
   }
 
@@ -219,48 +223,128 @@ class Parser {
   }
 
   consumeTag() {
-    const tag = this.consume();
-    if (tag?.token.type !== "text") {
-      throw Error("Malformed HTML when parsing tag");
+    const c = this.consume();
+    if (c?.token.type !== "text") {
+      throw this.error("tag", c!);
     }
-    return tag.char;
+    return c.char;
+  }
+
+  error(expected: string, match: Match) {
+    return new Error(
+      `Malformed HTML. Expected "${expected}", got "${
+        match?.char
+      }". The HTML is:\n\n${JSON.stringify(this.stack, null, 4)}`
+    );
+  }
+
+  peekTagOpenBracket() {
+    const c = this.peek();
+    return c?.token.type === "leftAngleBracket";
+  }
+
+  peekTextNode() {
+    const c = this.peek();
+    return c?.token.type === "text";
   }
 
   consumeTagOpeningBracket() {
     const c = this.consume();
     if (c?.token.type !== "leftAngleBracket") {
-      throw Error(`Malformed HTML. Expected "<", got "${c?.char}"`);
+      throw this.error("<", c!);
     }
     return c;
+  }
+
+  peekTagClosingBracket() {
+    return this.stack[0].token.type === "leftAngleBracket" && this.stack[1].token.type === 'forwardSlash'
   }
 
   consumeTagCloseingBracket() {
     const c = this.consume();
     if (c?.token.type !== "rightAngleBracket") {
-      throw Error(`Malformed HTML. Expected ">", got "${c?.char}"`);
+      throw this.error(">", c!);
     }
     return c;
   }
 
-  parseElement() {
+  consumeText() {
+    const c = this.consume();
+    if (c?.token.type !== "text") {
+      throw this.error("text", c!);
+    }
+    return c;
+  }
+
+  parseTextNode(parent: Node) {
+    const t = this.consumeText();
+    const n: Node = {
+      tag: "text",
+      attrs: [],
+      parent,
+    };
+    console.log(`tag: ${n.tag}. parent: ${parent.tag}`)
+    return n;
+  }
+
+  parseElement(parent: Node) {
+    if (!this.peekTagOpenBracket()) {
+      return this.parseTextNode(parent);
+    }
+
     this.consumeTagOpeningBracket();
 
     const tag = this.consumeTag();
     const attrs = this.consumeAttrs();
 
-    const node = {
+    const node: Node = {
       tag,
       attrs,
+      parent,
     };
 
-    this.consumeTagCloseingBracket()
+    console.log(`tag: ${node.tag}. attrs ${JSON.stringify(attrs)}. parent: ${node.parent?.tag}`)
 
-    console.log(JSON.stringify(node, null, 4));
-    console.log(this.stack)
+    this.consumeTagCloseingBracket();
+
+    if (this.peekTextNode()) {
+      return this.parseTextNode(node)
+    }
+
+    if (!this.peekTagOpenBracket()) {
+      return node;
+    }
+    // console.log(JSON.stringify(node, null, 4));
+    // console.log(this.stack)
+    return this.parseChildren(node);
+  }
+
+  parseChildren(parent: Node): Node {
+    const child = this.parseElement(parent);
+
+    if (this.peekTagClosingBracket()) {
+      this.consume() // <
+      this.consume() // /
+      this.consumeTag() // span
+      this.consume() // >
+      return child
+    }
+
+
+    if (this.peekTagOpenBracket()) {
+      this.parseChildren(child);
+    }
+    return child;
   }
 
   parse() {
-    this.parseElement();
+    const root: Node = {
+      tag: "root",
+      parent: undefined,
+      attrs: [],
+    };
+    this.parseElement(root);
+    console.log({root})
   }
 }
 
@@ -268,18 +352,13 @@ describe("parser", () => {
   it("<div>ok</div>", () => {
     const tokens = tokenize(`<div id="foo" class="bar">ok</div>`);
     const ast = new Parser(tokens).parse();
-    // assert.deepEqual(ast, {
-    //   id: "1",
-    //   tag: "div",
-    //   attrs: [],
-    //   children: [
-    //     {
-    //       id: "2",
-    //       tag: "ok",
-    //       attrs: [],
-    //     },
-    //   ],
-    // });
+    // console.log(JSON.stringify(ast, null, 4));
+  });
+
+  it.only("<div><span>ok</span></div>", () => {
+    const tokens = tokenize(`<div id="foo"><span class="bar">ok</span></div>`);
+    const ast = new Parser(tokens).parse();
+    // console.log(JSON.stringify(ast, null, 4));
   });
 });
 

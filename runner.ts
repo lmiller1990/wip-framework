@@ -199,6 +199,7 @@ emitter.on("run", () => {
                 )}\n  Received: ${JSON.stringify((e as any).actual)}`,
               });
             } else {
+              e.message = chalk.red(e.message)
               throw e
             }
           }
