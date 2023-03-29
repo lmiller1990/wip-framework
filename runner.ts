@@ -77,6 +77,7 @@ interface Test {
 
 import { EventEmitter as EE } from "events";
 import chalk from "chalk";
+import exp from "constants";
 
 function uuidv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
