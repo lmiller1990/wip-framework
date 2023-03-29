@@ -1,4 +1,4 @@
-import { describe, it, expect, run } from "./runner.js";
+import { describe, it, run } from "./runner.js";
 import { tokenize, Parser, Node } from "./compiler.js";
 import assert from "node:assert";
 
@@ -84,10 +84,10 @@ describe("parser", () => {
 
     const ast = new Parser(tokens, root).parse(root);
 
-    expect(ast.children.length).toBe(1);
-    expect(ast.children[0].tag).toBe("div");
-    expect(ast.children[0].children[0].tag).toBe("TEXT");
-    expect(ast.children[0].children[0].content).toBe("ok");
+    assert.equal(ast.children.length, 1)
+    assert.equal(ast.children[0].tag, "div");
+    assert.equal(ast.children[0].children[0].tag, "TEXT");
+    assert.equal(ast.children[0].children[0].content, "ok");
   });
 
   it("handles attrs", () => {
@@ -102,10 +102,10 @@ describe("parser", () => {
 
     const ast = new Parser(tokens, root).parse(root);
 
-    expect(ast.children.length).toBe(1);
+    assert.equal(ast.children.length, 1);
     const div = ast.children[0];
-    expect(div.attrs.id).toBe("main");
-    expect(div.attrs.class).toBe("foo");
+    assert.equal(div.attrs.id, "main");
+    assert.equal(div.attrs.class, "foo");
   });
 
   it("works with several levels of nesting", () => {
@@ -120,19 +120,19 @@ describe("parser", () => {
 
     const ast = new Parser(tokens, root).parse(root);
 
-    expect(ast.children.length).toBe(1);
-    expect(ast.children[0].tag).toBe("div");
+    assert.equal(ast.children.length, 1);
+    assert.equal(ast.children[0].tag, "div");
 
     // div
     const div = ast.children[0];
-    expect(div.children.length).toBe(2);
-    expect(div.children[0].tag).toBe("span");
-    expect(div.children[1].tag).toBe("p");
+    assert.equal(div.children.length, 2);
+    assert.equal(div.children[0].tag, "span");
+    assert.equal(div.children[1].tag, "p");
 
     // span
     const span = ast.children[0].children[0];
-    expect(span.children.length).toBe(1);
-    expect(span.children[0].tag).toBe("o");
+    assert.equal(span.children.length, 1);
+    assert.equal(span.children[0].tag, "o");
   });
 
   it("works on a more complex", () => {
@@ -156,25 +156,25 @@ describe("parser", () => {
     const ast = new Parser(tokens, root).parse(root);
     const body = ast.children[0].children[0];
 
-    expect(body.children.length).toBe(2);
-    expect(body.children[0].tag).toBe("h1");
-    expect(body.children[1].tag).toBe("div");
+    assert.equal(body.children.length, 2);
+    assert.equal(body.children[0].tag, "h1");
+    assert.equal(body.children[1].tag, "div");
 
     const div = body.children[1];
-    expect(div.attrs.id).toBe("main");
-    expect(div.attrs.class).toBe("test");
+    assert.equal(div.attrs.id, "main");
+    assert.equal(div.attrs.class, "test");
 
     const p = root.children[0].children[0].children[1].children[0];
-    expect(p.tag).toBe("p");
-    expect(p.children.length).toBe(3);
-    expect(p.children[0].tag).toBe("TEXT"); // Hello
-    expect(p.children[1].tag).toBe("em"); // <em>
-    expect(p.children[2].tag).toBe("TEXT"); // !
+    assert.equal(p.tag, "p");
+    assert.equal(p.children.length, 3);
+    assert.equal(p.children[0].tag, "TEXT"); // Hello
+    assert.equal(p.children[1].tag, "em"); // <em>
+    assert.equal(p.children[2].tag, "TEXT"); // !
 
     const em = p.children[1];
-    expect(em.children.length).toBe(1);
-    expect(em.children[0].tag).toBe("TEXT");
-    expect(em.children[0].content).toBe("world");
+    assert.equal(em.children.length, 1);
+    assert.equal(em.children[0].tag, "TEXT");
+    assert.equal(em.children[0].content, "world");
   });
 });
 
