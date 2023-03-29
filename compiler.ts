@@ -1,11 +1,24 @@
+type LeftCurlyBracket = { type: "leftCurlyBracket"; re: RegExp };
+type RightCurlyBracket = { type: "rightCurlyBracket"; re: RegExp };
 type LeftAngleBracket = { type: "leftAngleBracket"; re: RegExp };
 type RightAngleBracket = { type: "rightAngleBracket"; re: RegExp };
+type AtMark = { type: "atMark"; re: RegExp };
 type ForwardSlash = { type: "forwardSlash"; re: RegExp };
 type DoubleQuote = { type: "doubleQuote"; re: RegExp };
 type Equal = { type: "equal"; re: RegExp };
 type Whitespace = { type: "whitespace"; re: RegExp };
 type CarriageReturn = { type: "carriageReturn"; re: RegExp };
 type Text = { type: "text"; re: RegExp };
+
+const leftCurlyBracket: LeftCurlyBracket = {
+  type: "leftCurlyBracket",
+  re: /^\{/,
+};
+
+const rightCurlyBracket: RightCurlyBracket = {
+  type: "rightCurlyBracket",
+  re: /^\}/,
+};
 
 const leftAngleBracket: LeftAngleBracket = {
   type: "leftAngleBracket",
@@ -20,6 +33,11 @@ const carriageReturn: CarriageReturn = {
 const whitespace: Whitespace = {
   type: "whitespace",
   re: /^\s/,
+};
+
+const atMark: AtMark = {
+  type: "atMark",
+  re: /^@/,
 };
 
 const rightAngleBracket: RightAngleBracket = {
@@ -44,13 +62,16 @@ const equal: Equal = {
 
 const text: Text = {
   type: "text",
-  re: /^([A-Za-z0-9!]*)/,
+  re: /^([A-Za-z0-9!:\.]*)/,
 };
 
 const tokens = [
   carriageReturn,
+  leftCurlyBracket,
+  rightCurlyBracket,
   leftAngleBracket,
   rightAngleBracket,
+  atMark,
   whitespace,
   forwardSlash,
   doubleQuote,

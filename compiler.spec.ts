@@ -58,6 +58,46 @@ describe("tokenize", () => {
     );
   });
 
+  it("works for theoretical template", () => {
+    const tokens = tokenize(
+      `<h1>Count is: {count.value}</h1><button @click="handleClick">Inc</button>`
+    );
+    assert.deepEqual(
+      tokens.map((x) => x.char),
+      [
+        "<",
+        "h1",
+        ">",
+        "Count",
+        " ",
+        "is:",
+        " ",
+        "{",
+        "count.value",
+        "}",
+        "<",
+        "/",
+        "h1",
+        ">",
+        "<",
+        "button",
+        " ",
+        "@",
+        "click",
+        "=",
+        '"',
+        "handleClick",
+        '"',
+        ">",
+        "Inc",
+        "<",
+        "/",
+        "button",
+        ">",
+      ]
+    );
+  });
+
   it("works for full html document", () => {
     const tokens = tokenize(`
     <html>
@@ -84,7 +124,7 @@ describe("parser", () => {
 
     const ast = new Parser(tokens, root).parse(root);
 
-    assert.equal(ast.children.length, 1)
+    assert.equal(ast.children.length, 1);
     assert.equal(ast.children[0].tag, "div");
     assert.equal(ast.children[0].children[0].tag, "TEXT");
     assert.equal(ast.children[0].children[0].content, "ok");
